@@ -1,0 +1,8 @@
+CREATE TABLE IF NOT EXISTS enrichments (
+    id SERIAL PRIMARY KEY,
+	event_id INT  NOT NULL REFERENCES events(id),
+	response TEXT NOT NULL,
+	model TEXT NOT NULL,
+	created_at TIMESTAMP NOT NULL DEFAULT NOW()
+)
+
