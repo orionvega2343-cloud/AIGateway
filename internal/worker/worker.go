@@ -14,10 +14,11 @@ type Job struct {
 type Result struct {
 	EventID int
 	Content string
+	Model   string
 }
 
 type Enrichments interface {
-	Save(ctx context.Context, EventId int, resp string) error
+	Save(ctx context.Context, EventId int, resp string, model string) error
 }
 
 // TODO: Добавить реальный репо для сохранения в БД
@@ -65,7 +66,7 @@ func (p *Pipeline) Worker(ctx context.Context) <-chan Result {
 			select {
 			//В случае успешной записи в канал,
 			//пропускам второй кейс и переходим обратно в цикл
-			case out <- Result{EventID: v.EventID, Content: resp.OutputText()}:
+			case out <- Result{EventID: v.EventID, Content: resp.OutputText(), Model: resp.Model}:
 				continue
 			case <-ctx.Done():
 				return
@@ -114,7 +115,7 @@ func (p *Pipeline) Start(ctx context.Context) {
 	//TODO: добавить wg для реализации Graceful Shutdown
 	go func() {
 		for v := range merged {
-			err := p.repo.Save(ctx, v.EventID, v.Content)
+			err := p.repo.Save(ctx, v.EventID, v.Content, v.Model)
 			if err != nil {
 				log.Println("save err:", err)
 			}
