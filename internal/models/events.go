@@ -4,7 +4,7 @@ import "time"
 
 type Event struct {
 	Id          int        `json:"id" db:"id"`
-	EventId     int        `json:"event_id" db:"event_id"`
+	EventId     string     `json:"event_id" db:"event_id"`
 	Type        string     `json:"type" db:"type"`
 	Payload     string     `json:"payload" db:"payload"`
 	Status      string     `json:"status" db:"status"`
