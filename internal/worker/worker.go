@@ -2,6 +2,7 @@ package worker
 
 import (
 	"AIGateway/internal/aiclient"
+	"AIGateway/internal/repository"
 	"context"
 	"log"
 	"sync"
@@ -17,22 +18,18 @@ type Result struct {
 	Model   string
 }
 
-type Enrichments interface {
-	Save(ctx context.Context, EventId int, resp string, model string) error
-}
-
-// TODO: Добавить реальный репо для сохранения в БД
 type Pipeline struct {
 	in          chan Job
 	aiClient    *aiclient.Client
 	wg          *sync.WaitGroup
-	repo        Enrichments
+	gs          *sync.WaitGroup
+	repo        repository.Enrichments
 	workerCount int
 	buffer      int
 }
 
-func NewPipeline(in chan Job, aiClient *aiclient.Client, wg *sync.WaitGroup, repo Enrichments, workerCount int, buffer int) *Pipeline {
-	return &Pipeline{in: in, aiClient: aiClient, wg: wg, repo: repo, workerCount: workerCount, buffer: buffer}
+func NewPipeline(in chan Job, aiClient *aiclient.Client, wg *sync.WaitGroup, repo repository.Enrichments, workerCount int, buffer int, gs *sync.WaitGroup) *Pipeline {
+	return &Pipeline{in: in, aiClient: aiClient, wg: wg, repo: repo, workerCount: workerCount, buffer: buffer, gs: gs}
 }
 
 func (p *Pipeline) Producer(ctx context.Context, EventId int, payload string) error {
@@ -106,19 +103,24 @@ func (p *Pipeline) Merge(channels ...<-chan Result) <-chan Result {
 func (p *Pipeline) Start(ctx context.Context) {
 	var channels []<-chan Result
 
+	//Добавляем воркеры в общий слайс
 	for i := 0; i < p.workerCount; i++ {
 		channels = append(channels, p.Worker(ctx))
 	}
 
+	//Объединяем в общий канал
 	merged := p.Merge(channels...)
 
-	//TODO: добавить wg для реализации Graceful Shutdown
+	//Реализация graceful shutdown для корректного завершения,
+	//чтобы дождаться завершения записи в DB
+	p.gs.Add(1)
 	go func() {
 		for v := range merged {
-			err := p.repo.Save(ctx, v.EventID, v.Content, v.Model)
+			_, err := p.repo.Save(ctx, v.EventID, v.Content, v.Model)
 			if err != nil {
 				log.Println("save err:", err)
 			}
 		}
+		p.gs.Done()
 	}()
 }
