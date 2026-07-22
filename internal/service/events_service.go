@@ -34,6 +34,7 @@ func (e *EventsService) CreateEvent(ctx context.Context, externalId string, payl
 	if err != nil {
 		return models.Event{}, err
 	}
+
 	//Если false,
 	//не сохраняем в БД
 	if !resp {
