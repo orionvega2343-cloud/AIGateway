@@ -1,0 +1,23 @@
+syntax = "proto3";
+import "google/protobuf/timestamp.proto";
+option go_package = "AIGateway/internal/transport/grpc/pb";
+
+//Сервис логики
+service EnrichmentService {
+  rpc GetEnrichment(GetEnrichmentRequest) returns (GetEnrichmentResponse) {}
+}
+
+//Сообщение запроса
+message GetEnrichmentRequest {
+   int64 id = 1;
+}
+
+//Сообщение ответа
+message GetEnrichmentResponse {
+  int64 id = 1;
+  int64 event_id =2;
+  string response = 3;
+  string model = 4;
+  google.protobuf.Timestamp created_at = 5;
+
+}
