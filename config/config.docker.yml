@@ -1,0 +1,25 @@
+rest_service:
+  host: "0.0.0.0"
+  port: 8080
+  timeout: 10s
+
+grpc_service:
+  port: 7070
+  timeout: 10s
+
+db:
+  host: "postgres"
+  port: 5432
+  name: "gateway"
+  user: "postgres"
+  ssl_mode: "disable"
+
+redis:
+  addr: "redis:6379"
+
+ai_client:
+  base_url: "url"
+
+pipeline:
+  worker_count: 5
+  buffer_size: 10
