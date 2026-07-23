@@ -117,7 +117,7 @@ docker compose up --build
 
 ### REST
 
-- `POST /events` — принять событие.
+- `POST /events` - принять событие.
   ```json
   { "external_id": "abc-123", "payload": "текст для обогащения" }
   ```
