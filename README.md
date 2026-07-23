@@ -34,18 +34,18 @@
       gRPC EnrichmentServer ──► EnrichmentsService ──► EnrichmentsRepo (Postgres)
 ```
 
-- **REST** (`gin`) — прием событий и чтение событий/обогащений.
-- **gRPC** — чтение обогащения по id (`internal/transport/grpc`).
-- **worker.Pipeline** — fan-out/fan-in конвейер: N воркеров разбирают общий канал
+- **REST** (`gin`) - прием событий и чтение событий/обогащений.
+- **gRPC** - чтение обогащения по id (`internal/transport/grpc`).
+- **worker.Pipeline** - fan-out/fan-in конвейер: N воркеров разбирают общий канал
   `Job`, ходят в AI-клиент, результаты сливаются в один канал и пишутся в БД.
   Graceful shutdown: канал `Job` закрывается после остановки REST/gRPC,
   воркеры дорабатывают очередь, а `sync.WaitGroup` (`gs`) дожидается,
   пока последний результат не запишется в БД.
-- **aiclient** — обертка над OpenAI SDK с рейт-лимитом на основе Redis
+- **aiclient** - обертка над OpenAI SDK с рейт-лимитом на основе Redis
   (счетчик с TTL, `INCR` + `EXPIRE`).
-- **Postgres** (`sqlx` + `pgx`) — хранилище событий (`events`) и результатов
+- **Postgres** (`sqlx` + `pgx`) - хранилище событий (`events`) и результатов
   обогащения (`enrichments`).
-- **Redis** — дедупликация входящих событий по `external_id` (`SETNX`) и
+- **Redis** - дедупликация входящих событий по `external_id` (`SETNX`) и
   счетчик для рейт-лимита AI-клиента.
 
 ## Структура проекта
@@ -69,8 +69,8 @@ migrations                           SQL-миграции (events, enrichments)
 
 ## Конфигурация
 
-Настройки читаются из `config/config.yml` (`cleanenv`), секреты — из `.env`
-или переменных окружения (`DB_PASS`, `API_KEY` — обязательны).
+Настройки читаются из `config/config.yml` (`cleanenv`), секреты - из `.env`
+или переменных окружения (`DB_PASS`, `API_KEY` - обязательны).
 
 ```yaml
 rest_service: { host, port, timeout }
@@ -81,7 +81,7 @@ ai_client:    { base_url }                            # + API_KEY из env
 pipeline:     { worker_count, buffer_size }
 ```
 
-`.env` — не коммитится (см. `.gitignore`), пример:
+`.env` - не коммитится (см. `.gitignore`), пример:
 
 ```
 DB_PASS=postgres
@@ -107,10 +107,10 @@ docker compose up --build
 Поднимает `app` (REST на `:8080`, gRPC на `:7070`), `postgres:16-alpine` и
 `redis:7-alpine`. `DB_PASS`/`API_KEY` подтягиваются из `.env` в корне проекта.
 Внутри контейнера сервис использует `config/config.docker.yml`
-(хосты `postgres`/`redis` вместо `localhost`) — файл подмонтирован поверх
+(хосты `postgres`/`redis` вместо `localhost`) - файл подмонтирован поверх
 запечённого в образ `config.yml`.
 
-Миграции контейнер не применяет автоматически — прогнать их нужно отдельно
+Миграции контейнер не применяет автоматически - прогнать их нужно отдельно
 (например, `migrate -path migrations -database "postgres://..." up`).
 
 ## API
@@ -129,4 +129,4 @@ docker compose up --build
 ### gRPC
 
 `EnrichmentService.GetEnrichment(id int64) → { id, event_id, response, model, created_at }`
-— читает результат AI-обогащения по id из `enrichments`.
+ читает результат AI-обогащения по id из `enrichments`.
